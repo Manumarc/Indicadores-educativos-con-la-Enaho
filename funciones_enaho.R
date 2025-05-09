@@ -2,7 +2,12 @@
 # Función para el cálculo de total de años de escolaridad según rangos de edad #
 #==============================================================================#
 
-tescola <- function(mod_salud,mod_edu,mod_sumaria,rango_edad){
+tescola <- function(mod_salud,mod_edu,mod_sumaria, rango_edad){
+  
+  nom_año <- mod_salud %>% 
+    select(AÑO) %>% 
+    unique() %>% 
+    pull()
   
   # Integración de bases de datos #
   #-------------------------------#
@@ -115,7 +120,8 @@ tescola <- function(mod_salud,mod_edu,mod_sumaria,rango_edad){
   #-------------------------------------------#
   
   bd_a1 <- a1 %>% 
-    group_by(region,area,escol) %>% 
+    mutate(año = nom_año) %>% 
+    group_by(año,region,area,escol) %>% 
     summarise(x5 = redondear(weighted_mean(x5, FACTORA07, na.rm = TRUE),0)) %>% 
     filter(escol %in% 1) %>% 
     select(-escol)
