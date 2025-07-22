@@ -1,3 +1,67 @@
+#====================================================================#
+# Función para el descargar las bases de la Enaho por módulos y años #
+#====================================================================#
+
+descargar_bases <- function(anios, modulos){
+  
+  carpeta_destino <- "01 Bases"
+  if (!dir.exists(carpeta_destino)) dir.create(carpeta_destino, recursive = TRUE)
+  
+  # URL y destino del CSV
+  url <- "https://raw.githubusercontent.com/Manumarc/Indicadores-educativos-con-la-Enaho/refs/heads/main/Descarga_enaho.csv"
+  destino <- file.path(tempdir(), "Descarga_enaho.csv")  # evita problemas de permisos
+  
+  # Descargar el CSV
+  download.file(url, destfile = destino, mode = "wb")
+  
+  descargar <- read_csv2(destino, show_col_types = FALSE)
+  
+  # Filtrar según input
+  df_filtrado <- descargar %>%
+    filter(año %in% anios, num_modulo %in% modulos)
+  
+  # Descarga, descompresión y copia del .sav
+  walk2(seq_len(nrow(df_filtrado)), paste0("Enaho_", df_filtrado$año, "_modulo_", df_filtrado$num_modulo), function(i, nombre) {
+    
+    url <- df_filtrado$link[i]
+    nom_bds <- df_filtrado$nom_bd[i]
+    
+    ruta_zip <- file.path(carpeta_destino, paste0(nombre, ".zip"))
+    carpeta_temporal <- file.path(carpeta_destino, nombre)
+    
+    message("Descargando ", nombre, "...")
+    download.file(url, destfile = ruta_zip, mode = "wb")
+    
+    message("Descomprimiendo ", nombre, "...")
+    unzip(ruta_zip, exdir = carpeta_temporal)
+    
+    # Separar los nombres de archivo (si hay varios)
+    archivos_objetivo <- strsplit(nom_bds, ",\\s*")[[1]]
+    
+    # Iterar sobre cada archivo .sav a buscar
+    for (archivo_nom in archivos_objetivo) {
+      
+      archivo_sav <- list.files(
+        path = carpeta_temporal,
+        pattern = paste0("^", archivo_nom, "$"),
+        recursive = TRUE,
+        full.names = TRUE
+      )
+      
+      if (length(archivo_sav) > 0) {
+        destino_sav <- file.path(carpeta_destino, basename(archivo_sav))
+        fs::file_copy(archivo_sav, destino_sav, overwrite = TRUE)
+        message("Archivo .sav copiado a: ", destino_sav)
+      } else {
+        warning("No se encontró archivo .sav: ", archivo_nom, " en ", nombre)
+      }
+    }
+  })
+  
+  message("Proceso completo.")
+}
+
+
 #==============================================================================#
 # Función para el cálculo de total de años de escolaridad según rangos de edad #
 #==============================================================================#
