@@ -2,7 +2,7 @@
 # Función para el descargar las bases de la Enaho por módulos y años #
 #====================================================================#
 
-descargar_bases <- function(anios, modulos){
+descargar_bases <- function(años, modulos){
   
   carpeta_destino <- "01 Bases"
   if (!dir.exists(carpeta_destino)) dir.create(carpeta_destino, recursive = TRUE)
@@ -18,7 +18,7 @@ descargar_bases <- function(anios, modulos){
   
   # Filtrar según input
   df_filtrado <- descargar %>%
-    filter(año %in% anios, num_modulo %in% modulos)
+    filter(año %in% años, num_modulo %in% modulos)
   
   # Descarga, descompresión y copia del .sav
   walk2(seq_len(nrow(df_filtrado)), paste0("Enaho_", df_filtrado$año, "_modulo_", df_filtrado$num_modulo), function(i, nombre) {
@@ -60,7 +60,6 @@ descargar_bases <- function(anios, modulos){
   
   message("Proceso completo.")
 }
-
 
 #==============================================================================#
 # Función para el cálculo de total de años de escolaridad según rangos de edad #
