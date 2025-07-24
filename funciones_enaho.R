@@ -18,7 +18,7 @@ descargar_bases <- function(nom_encuesta, años, modulos){
 
   # Filtrar según input
   df_filtrado <- descargar %>%
-    filter(encuesta = nom_encuesta, año %in% años, num_modulo %in% modulos)
+    filter(encuesta %in% nom_encuesta, año %in% años, num_modulo %in% modulos)
 
   # Descarga, descompresión y copia del .sav
   walk2(seq_len(nrow(df_filtrado)), paste0(nom_encuesta, "_", df_filtrado$año, "_modulo_", df_filtrado$num_modulo), function(i, nombre) {
