@@ -1,3 +1,21 @@
+#===========================================================#
+# Base de datos con nombre de regiones y ubigeo a 2 dígitos #
+#===========================================================#
+
+# Lima incluye a Lima Provincias y Lima Metropolitana
+
+bd_regiones <- data.frame(
+  ubigeo_reg = sprintf("%02d", 1:25),
+  nom_region = c(
+    "Amazonas", "Áncash", "Apurímac", "Arequipa", "Ayacucho",
+    "Cajamarca", "Callao", "Cusco", "Huancavelica", "Huánuco",
+    "Ica", "Junín", "La Libertad", "Lambayeque", "Lima",
+    "Loreto", "Madre de Dios", "Moquegua", "Pasco", "Piura",
+    "Puno", "San Martín", "Tacna", "Tumbes", "Ucayali"
+  ),
+  stringsAsFactors = FALSE
+)
+
 #=================================================================#
 # Función para descargar las bases de la Enaho por módulos y años #
 #=================================================================#
