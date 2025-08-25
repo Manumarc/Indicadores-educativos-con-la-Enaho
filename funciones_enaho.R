@@ -42,41 +42,46 @@ descargar_bases <- function(nom_encuesta, años, modulos){
 
   # Descarga, descompresión y copia del .sav
   walk2(seq_len(nrow(df_filtrado)), paste0(nom_encuesta, "_", df_filtrado$año, "_modulo_", df_filtrado$num_modulo), function(i, nombre) {
-
-    url <- df_filtrado$link[i]
-    nom_bds <- df_filtrado$nom_bd[i]
-
-    ruta_zip <- file.path(carpeta_destino, paste0(nombre, ".zip"))
-    carpeta_temporal <- file.path(carpeta_destino, nombre)
-
-    message("Descargando ", nombre, "...")
-    download.file(url, destfile = ruta_zip, mode = "wb")
-
-    message("Descomprimiendo ", nombre, "...")
-    unzip(ruta_zip, exdir = carpeta_temporal)
-
-    # Separar los nombres de archivo (si hay varios)
-    archivos_objetivo <- strsplit(nom_bds, ",\\s*")[[1]]
-
-    # Iterar sobre cada archivo .sav a buscar
-    for (archivo_nom in archivos_objetivo) {
-
-      archivo_sav <- list.files(
-        path = carpeta_temporal,
-        pattern = paste0("^", archivo_nom, ".*\\.sav$"),
-        recursive = TRUE,
-        full.names = TRUE
-      )
-
-      if (length(archivo_sav) > 0) {
-        destino_sav <- file.path(carpeta_destino, basename(archivo_sav))
-        fs::file_copy(archivo_sav, destino_sav, overwrite = TRUE)
-        message("Archivo .sav copiado a: ", destino_sav)
-      } else {
-        warning("No se encontró archivo .sav: ", archivo_nom, " en ", nombre)
-      }
+  
+  url <- df_filtrado$link[i]
+  nom_bds <- df_filtrado$nom_bd[i]
+  
+  ruta_zip <- file.path(carpeta_destino, paste0(nombre, ".zip"))
+  carpeta_temporal <- file.path(tempdir(), nombre)  # usar carpeta temporal para descomprimir
+  
+  message("Descargando ", nombre, "...")
+  download.file(url, destfile = ruta_zip, mode = "wb")
+  
+  message("Descomprimiendo ", nombre, "...")
+  unzip(ruta_zip, exdir = carpeta_temporal)
+  
+  # Separar los nombres de archivo (si hay varios)
+  archivos_objetivo <- strsplit(nom_bds, ",\\s*")[[1]]
+  
+  # Iterar sobre cada archivo .sav a buscar
+  for (archivo_nom in archivos_objetivo) {
+    
+    archivo_sav <- list.files(
+      path = carpeta_temporal,
+      pattern = paste0("^", archivo_nom, ".*\\.sav$"),
+      recursive = TRUE,
+      full.names = TRUE
+    )
+    
+    if (length(archivo_sav) > 0) {
+      # copiar a carpeta_destino directamente (afuera de subcarpetas)
+      destino_sav <- file.path(carpeta_destino, basename(archivo_sav))
+      fs::file_copy(archivo_sav, destino_sav, overwrite = TRUE)
+      message("Archivo .sav copiado a: ", destino_sav)
+    } else {
+      warning("No se encontró archivo .sav: ", archivo_nom, " en ", nombre)
     }
-  })
+  }
+  
+  # limpiar archivos temporales para no acumular
+  unlink(carpeta_temporal, recursive = TRUE)
+  unlink(ruta_zip)
+})
 
   message("Proceso completo.")
 }
