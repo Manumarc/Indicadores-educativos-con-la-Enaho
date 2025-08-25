@@ -63,9 +63,10 @@ descargar_bases <- function(nom_encuesta, años, modulos){
 
       archivo_sav <- list.files(
         path = carpeta_temporal,
-        pattern = paste0("^", archivo_nom, ".*\\.sav$"),
+        pattern = paste0(".*", archivo_nom, ".*\\.sav$"),
         recursive = TRUE,
-        full.names = TRUE
+        full.names = TRUE,
+        ignore.case = TRUE
       )
 
       if (length(archivo_sav) > 0) {
