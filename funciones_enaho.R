@@ -88,7 +88,7 @@ descargar_bases <- function(nom_encuesta, años, modulos){
 tescola <- function(mod_salud,mod_edu,mod_sumaria, rango_edad){
   
   nom_año <- mod_salud %>% 
-    select(AÑO) %>% 
+    dplyr::select(AÑO) %>% 
     unique() %>% 
     pull()
   
@@ -102,7 +102,7 @@ tescola <- function(mod_salud,mod_edu,mod_sumaria, rango_edad){
   claves_sumaria <- c("CONGLOME", "VIVIENDA", "HOGAR")
   
   bdedu_filtrado <- mod_edu %>%
-    select(all_of(claves_educ), setdiff(names(.), union(names(mod_salud), claves_educ)))
+    dplyr::select(all_of(claves_educ), setdiff(names(.), union(names(mod_salud), claves_educ)))
   
   # Pegar base de educación
   
@@ -112,7 +112,7 @@ tescola <- function(mod_salud,mod_edu,mod_sumaria, rango_edad){
   # Filtrar columnas repetidas y únicas de la base de sumaria 
   
   bdsumaria_filtrada <- mod_sumaria %>%
-    select(all_of(claves_sumaria), setdiff(names(.), union(names(bdtemp), claves_sumaria)))
+    dplyr::select(all_of(claves_sumaria), setdiff(names(.), union(names(bdtemp), claves_sumaria)))
   
   # Pegar base de sumaria
   
@@ -207,7 +207,7 @@ tescola <- function(mod_salud,mod_edu,mod_sumaria, rango_edad){
     group_by(año,region,area,escol) %>% 
     summarise(x5 = redondear(weighted_mean(x5, FACTORA07, na.rm = TRUE),0)) %>% 
     filter(escol %in% 1) %>% 
-    select(-escol)
+    dplyr::select(-escol)
   
   return(bd_a1)
   
