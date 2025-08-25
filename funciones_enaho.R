@@ -61,25 +61,25 @@ descargar_bases <- function(nom_encuesta, años, modulos){
     # Iterar sobre cada archivo .sav a buscar
     for (archivo_nom in archivos_objetivo) {
   
-    archivo_sav <- list.files(
+  # quitar extensión si la trae
+  archivo_base <- tools::file_path_sans_ext(archivo_nom)
+  
+  # buscar el .sav dentro de cualquier subcarpeta de 'carpeta_temporal'
+  archivo_sav <- list.files(
     path = carpeta_temporal,
-    pattern = paste0(".*", archivo_nom, ".*\\.sav$"),
+    pattern = paste0(".*", archivo_base, ".*\\.sav$"),
     recursive = TRUE,
     full.names = TRUE,
     ignore.case = TRUE
   )
   
   if (length(archivo_sav) > 0) {
-    for (f in archivo_sav) {
-      # Construir nombre único: módulo/año + nombre original
-      nuevo_nombre <- paste0(nombre, "_", basename(f))
-      destino_sav <- file.path(carpeta_destino, nuevo_nombre)
-      
-      message("Copiando ", f, " → ", destino_sav)
-      fs::file_copy(f, destino_sav, overwrite = TRUE)
-    }
+    # copiar directamente a la carpeta 01 Bases (sin subcarpetas intermedias)
+    destino_sav <- file.path(carpeta_destino, basename(archivo_sav))
+    fs::file_copy(archivo_sav, destino_sav, overwrite = TRUE)
+    message("Archivo .sav copiado a: ", destino_sav)
   } else {
-    warning("No se encontró archivo .sav: ", archivo_nom, " en ", nombre)
+    warning("No se encontró archivo .sav: ", archivo_nom, " en ", carpeta_temporal)
   }
 }
   })
