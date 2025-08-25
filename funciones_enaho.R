@@ -61,27 +61,25 @@ descargar_bases <- function(nom_encuesta, años, modulos){
     # Iterar sobre cada archivo .sav a buscar
     for (archivo_nom in archivos_objetivo) {
   
-  # quitar extensión si la trae
-  archivo_base <- tools::file_path_sans_ext(archivo_nom)
-  
-  # buscar el .sav dentro de cualquier subcarpeta de 'carpeta_temporal'
-  archivo_sav <- list.files(
-    path = carpeta_temporal,
-    pattern = paste0(".*", archivo_base, ".*\\.sav$"),
-    recursive = TRUE,
-    full.names = TRUE,
-    ignore.case = TRUE
-  )
-  
-  if (length(archivo_sav) > 0) {
-    # copiar directamente a la carpeta 01 Bases (sin subcarpetas intermedias)
-    destino_sav <- file.path(carpeta_destino, basename(archivo_sav))
-    fs::file_copy(archivo_sav, destino_sav, overwrite = TRUE)
-    message("Archivo .sav copiado a: ", destino_sav)
-  } else {
-    warning("No se encontró archivo .sav: ", archivo_nom, " en ", carpeta_temporal)
-  }
-}
+      archivo_base <- archivo_nom   # aquí pones "Enaho01-2024-100"
+      
+      todos_archivos <- list.files(
+        path = carpeta_temporal,
+        recursive = TRUE,
+        full.names = TRUE
+      )
+      
+      archivo_encontrado <- todos_archivos[grepl(archivo_base, basename(todos_archivos), ignore.case = TRUE)]
+      
+      if (length(archivo_encontrado) > 0) {
+        # le forzamos la extensión .sav al copiar
+        destino_sav <- file.path(carpeta_destino, paste0(basename(archivo_encontrado), ".sav"))
+        fs::file_copy(archivo_encontrado, destino_sav, overwrite = TRUE)
+        message("Archivo copiado a: ", destino_sav)
+      } else {
+        warning("No se encontró archivo: ", archivo_nom, " en ", carpeta_temporal)
+      }
+    }
   })
 
   message("Proceso completo.")
