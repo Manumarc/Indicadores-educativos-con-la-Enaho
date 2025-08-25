@@ -20,69 +20,97 @@ bd_regiones <- data.frame(
 # Función para descargar las bases de la Enaho por módulos y años #
 #=================================================================#
 
-descargar_bases <- function(nom_encuesta, años, modulos){
-
+descargar_bases <- function(nom_encuesta, años, modulos) {
+  
   carpeta_destino <- "01 Bases"
   if (!dir.exists(carpeta_destino)) dir.create(carpeta_destino, recursive = TRUE)
-
+  
   # URL y destino del CSV
   url <- "https://raw.githubusercontent.com/Manumarc/Indicadores-educativos-con-la-Enaho/refs/heads/main/Descarga_enaho.csv"
   destino <- file.path(tempdir(), "Descarga_enaho.csv")  # evita problemas de permisos
-
+  
   # Descargar el CSV
-  download.file(url, destfile = destino, mode = "wb")
-
-  descargar <- read_csv2(destino, show_col_types = FALSE)
-
+  download.file(url, destfile = destino, mode = "wb", quiet = TRUE)
+  descargar <- readr::read_csv2(destino, show_col_types = FALSE)
+  
   # Filtrar según input
   df_filtrado <- descargar %>%
-    filter(encuesta %in% nom_encuesta) %>%
-    filter(año %in% años) %>%
-    filter(num_modulo %in% modulos)
-
-  # Descarga, descompresión y copia del .sav
-  walk2(seq_len(nrow(df_filtrado)), paste0(nom_encuesta, "_", df_filtrado$año, "_modulo_", df_filtrado$num_modulo), function(i, nombre) {
+    dplyr::filter(encuesta %in% nom_encuesta,
+                  año %in% años,
+                  num_modulo %in% modulos)
   
-  url <- df_filtrado$link[i]
-  nom_bds <- df_filtrado$nom_bd[i]
-  
-  ruta_zip <- file.path(carpeta_destino, paste0(nombre, ".zip"))
-  carpeta_temporal <- file.path(tempdir(), nombre)  # usar carpeta temporal para descomprimir
-  
-  message("Descargando ", nombre, "...")
-  download.file(url, destfile = ruta_zip, mode = "wb")
-  
-  message("Descomprimiendo ", nombre, "...")
-  unzip(ruta_zip, exdir = carpeta_temporal)
-  
-  # Separar los nombres de archivo (si hay varios)
-  archivos_objetivo <- strsplit(nom_bds, ",\\s*")[[1]]
-  
-  # Iterar sobre cada archivo .sav a buscar
-  for (archivo_nom in archivos_objetivo) {
-    
-    archivo_sav <- list.files(
-      path = carpeta_temporal,
-      pattern = paste0("^", archivo_nom, ".*\\.sav$"),
-      recursive = TRUE,
-      full.names = TRUE
-    )
-    
-    if (length(archivo_sav) > 0) {
-      # copiar a carpeta_destino directamente (afuera de subcarpetas)
-      destino_sav <- file.path(carpeta_destino, basename(archivo_sav))
-      fs::file_copy(archivo_sav, destino_sav, overwrite = TRUE)
-      message("Archivo .sav copiado a: ", destino_sav)
-    } else {
-      warning("No se encontró archivo .sav: ", archivo_nom, " en ", nombre)
-    }
+  if (nrow(df_filtrado) == 0) {
+    warning("No se encontraron combinaciones en el CSV con esos filtros.")
+    return(invisible(NULL))
   }
   
-  # limpiar archivos temporales para no acumular
-  unlink(carpeta_temporal, recursive = TRUE)
-  unlink(ruta_zip)
-})
-
+  # Descarga, descompresión y copia del .sav
+  purrr::walk2(
+    seq_len(nrow(df_filtrado)),
+    paste0(nom_encuesta, "_", df_filtrado$año, "_modulo_", df_filtrado$num_modulo),
+    function(i, nombre) {
+      
+      url <- df_filtrado$link[i]
+      nom_bds <- df_filtrado$nom_bd[i]
+      
+      ruta_zip <- file.path(tempdir(), paste0(nombre, ".zip"))
+      carpeta_temporal <- file.path(tempdir(), nombre)
+      
+      message("Descargando ", nombre, "...")
+      download.file(url, destfile = ruta_zip, mode = "wb", quiet = TRUE)
+      
+      message("Descomprimiendo ", nombre, "...")
+      unzip(ruta_zip, exdir = carpeta_temporal)
+      
+      # Separar los nombres de archivo (si hay varios)
+      archivos_objetivo <- strsplit(nom_bds, ",\\s*")[[1]]
+      
+      encontrados <- character(0)
+      
+      for (archivo_nom in archivos_objetivo) {
+        archivo_sav <- list.files(
+          path = carpeta_temporal,
+          pattern = paste0("^", archivo_nom, ".*\\.sav$"),
+          recursive = TRUE,
+          full.names = TRUE,
+          ignore.case = TRUE
+        )
+        
+        if (length(archivo_sav) > 0) {
+          encontrados <- c(encontrados, archivo_sav)
+        } else {
+          warning("No se encontró archivo .sav esperado: ", archivo_nom, " en ", nombre)
+        }
+      }
+      
+      # Si no encontró nada de lo esperado → copiar todos los .sav
+      if (length(encontrados) == 0) {
+        encontrados <- list.files(
+          path = carpeta_temporal,
+          pattern = "\\.sav$",
+          recursive = TRUE,
+          full.names = TRUE,
+          ignore.case = TRUE
+        )
+        if (length(encontrados) > 0) {
+          message("Copiando todos los .sav de ", nombre, " porque no hubo coincidencia exacta.")
+        }
+      }
+      
+      # Copiar archivos encontrados a la carpeta destino
+      if (length(encontrados) > 0) {
+        purrr::walk(encontrados, function(x) {
+          destino_sav <- file.path(carpeta_destino, basename(x))
+          fs::file_copy(x, destino_sav, overwrite = TRUE)
+          message("Archivo .sav copiado a: ", destino_sav)
+        })
+      }
+      
+      # limpiar temporales
+      unlink(carpeta_temporal, recursive = TRUE)
+      unlink(ruta_zip)
+    })
+  
   message("Proceso completo.")
 }
 
