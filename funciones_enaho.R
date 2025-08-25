@@ -73,7 +73,7 @@ descargar_bases <- function(nom_encuesta, años, modulos){
       
       if (length(archivo_encontrado) > 0) {
         # le forzamos la extensión .sav al copiar
-        destino_sav <- file.path(carpeta_destino, paste0(basename(archivo_encontrado), ".sav"))
+        destino_sav <- file.path(carpeta_destino, paste0(basename(archivo_encontrado)))
         fs::file_copy(archivo_encontrado, destino_sav, overwrite = TRUE)
         message("Archivo copiado a: ", destino_sav)
       } else {
