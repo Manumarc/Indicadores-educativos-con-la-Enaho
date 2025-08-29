@@ -89,7 +89,11 @@ descargar_bases <- function(nom_encuesta, años, modulos){
           message("Archivo copiado a: ", destino_sav)
         } else {
           warning("No se encontró archivo: ", archivo_nom, " en ", carpeta_temporal)
-        }
+      }
+    }
+  })
+
+  message("Proceso completo.")
 }
 
 #==============================================================================#
