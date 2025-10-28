@@ -108,6 +108,32 @@ descargar_bases <- function(nom_encuesta, años, modulos){
   message("Proceso completo.")
 }
 
+
+#=======================================================================#
+# Función para ver cuáles módulos hay en cada base en un año específico #
+#=======================================================================#
+
+info.bases <- function(nom_encuesta, años) {
+  
+  # URL del CSV remoto
+  url <- "https://raw.githubusercontent.com/Manumarc/Indicadores-educativos-con-la-Enaho/refs/heads/main/Descarga_enaho.csv"
+  destino <- file.path(tempdir(), "Descarga_enaho.csv")
+
+  # Descargar el CSV (modo binario para evitar errores de codificación)
+  download.file(url, destfile = destino, mode = "wb")
+
+  # Leer el CSV
+  descargar <- readr::read_csv2(destino, show_col_types = FALSE)
+
+  # Filtrar según parámetros
+  df_filtrado <- descargar %>%
+    dplyr::filter(encuesta %in% nom_encuesta) %>%
+    dplyr::filter(año %in% años)
+
+  # Retornar el data frame filtrado por si quieres usarlo también en código
+  return(df_filtrado)
+}
+
 #==============================================================================#
 # Función para el cálculo de total de años de escolaridad según rangos de edad #
 #==============================================================================#
