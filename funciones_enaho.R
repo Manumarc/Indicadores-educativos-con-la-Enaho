@@ -52,23 +52,20 @@ descargar_bases <- function(nom_encuesta, años, modulos){
     message("Descargando ", nombre, "...")
     download.file(url, destfile = ruta_zip, mode = "wb")
 
-    message("Descomprimiendo ", nombre, "...")
-    ok <- FALSE
-    tryCatch({
-      utils::unzip(ruta_zip, exdir = carpeta_temporal, unzip = "internal")
-      ok <- TRUE
+    message("Descomprimiendo solo archivos .sav de ", nombre, "...")
+    archivos_sav <- tryCatch({
+      unzip(ruta_zip, list = TRUE)$Name
     }, error = function(e) {
-      if (grepl("invalid multibyte", e$message, ignore.case = TRUE)) {
-        message("⚠️  Reintentando con conversión Latin-1 por tildes en nombres...")
-        archivos_zip <- utils::unzip(ruta_zip, list = TRUE)
-        archivos_zip$Name <- iconv(archivos_zip$Name, from = "latin1", to = "UTF-8", sub = "byte")
-        utils::unzip(ruta_zip, exdir = carpeta_temporal, unzip = "internal")
-        ok <- TRUE
-      } else {
-        warning("Error al descomprimir ", nombre, ": ", e$message)
-      }
+      system(sprintf("unzip -Z1 %s", shQuote(ruta_zip)), intern = TRUE)
     })
-    if (!ok) warning("No se pudo descomprimir correctamente ", nombre)
+    
+    archivos_sav <- grep("\\.sav$", archivos_sav, value = TRUE, ignore.case = TRUE)
+    
+    if (length(archivos_sav) == 0) {
+      warning("No se encontraron archivos .sav en ", nombre)
+    } else {
+      unzip(ruta_zip, files = archivos_sav, exdir = carpeta_temporal)
+    }
 
     # Separar los nombres de archivo (si hay varios)
     archivos_objetivo <- strsplit(nom_bds, ",\\s*")[[1]]
