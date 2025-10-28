@@ -53,7 +53,12 @@ descargar_bases <- function(nom_encuesta, años, modulos){
     download.file(url, destfile = ruta_zip, mode = "wb")
 
     message("Descomprimiendo ", nombre, "...")
-    unzip(ruta_zip, exdir = carpeta_temporal)
+    tryCatch(
+      utils::unzip(ruta_zip, exdir = carpeta_temporal, unzip = "internal"),
+      error = function(e) {
+        warning("Error al descomprimir ", nombre, ": ", e$message)
+      }
+    )
 
     # Separar los nombres de archivo (si hay varios)
     archivos_objetivo <- strsplit(nom_bds, ",\\s*")[[1]]
