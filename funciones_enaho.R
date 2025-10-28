@@ -53,12 +53,22 @@ descargar_bases <- function(nom_encuesta, años, modulos){
     download.file(url, destfile = ruta_zip, mode = "wb")
 
     message("Descomprimiendo ", nombre, "...")
-    tryCatch(
-      utils::unzip(ruta_zip, exdir = carpeta_temporal, unzip = "internal"),
-      error = function(e) {
+    ok <- FALSE
+    tryCatch({
+      utils::unzip(ruta_zip, exdir = carpeta_temporal, unzip = "internal")
+      ok <- TRUE
+    }, error = function(e) {
+      if (grepl("invalid multibyte", e$message, ignore.case = TRUE)) {
+        message("⚠️  Reintentando con conversión Latin-1 por tildes en nombres...")
+        archivos_zip <- utils::unzip(ruta_zip, list = TRUE)
+        archivos_zip$Name <- iconv(archivos_zip$Name, from = "latin1", to = "UTF-8", sub = "byte")
+        utils::unzip(ruta_zip, exdir = carpeta_temporal, unzip = "internal")
+        ok <- TRUE
+      } else {
         warning("Error al descomprimir ", nombre, ": ", e$message)
       }
-    )
+    })
+    if (!ok) warning("No se pudo descomprimir correctamente ", nombre)
 
     # Separar los nombres de archivo (si hay varios)
     archivos_objetivo <- strsplit(nom_bds, ",\\s*")[[1]]
