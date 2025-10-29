@@ -24,7 +24,7 @@ La función "info.encuesta" permite visualizar la información de módulos que h
 # Módulos que hay en la Endes de 2023 y 2024
 #--------------------------------------------------------------------------#
 
-info.bases("Endes",c(2023,2024))
+info.encuesta("Endes",c(2023,2024))
 
 ```
 
