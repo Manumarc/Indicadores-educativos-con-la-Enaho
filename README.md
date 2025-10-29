@@ -6,7 +6,7 @@
 - library(fs)
 
 # Indicadores educativos con la Enaho
-Conjunto de funciones para el procesamiento y cálculo de indicadores educativos con las bases de datos de la Enaho.
+Conjunto de funciones para el procesamiento y cálculo de indicadores educativos con las bases de datos de la Encuesta nacional de hogares (Enaho) y la Encuesta demográfica y de salud (Endes).
 
 ## Llamar a las funciones 
 
