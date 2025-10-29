@@ -113,7 +113,7 @@ descargar_bases <- function(nom_encuesta, años, modulos){
 # Función para ver cuáles módulos hay en cada base en un año específico #
 #=======================================================================#
 
-info.bases <- function(nom_encuesta, años) {
+info.encuesta <- function(nom_encuesta, años) {
   
   # URL del CSV remoto
   url <- "https://raw.githubusercontent.com/Manumarc/Indicadores-educativos-con-la-Enaho/refs/heads/main/Descarga_enaho.csv"
