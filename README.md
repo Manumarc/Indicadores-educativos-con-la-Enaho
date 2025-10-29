@@ -13,7 +13,7 @@ Conjunto de funciones para el procesamiento y cálculo de indicadores educativos
 Para llamar a las funciones desarrolladas se debe usar el siguiente código:
 
 ```
-devtools::source_url("https://raw.githubusercontent.com/Manumarc/Indicadores-censo-escolar/refs/heads/main/funcionesce.R")
+devtools::source_url("https://raw.githubusercontent.com/Manumarc/Indicadores-educativos-con-la-Enaho/refs/heads/main/funciones_enaho.R")
 ```
 
 ## Descargar bases
