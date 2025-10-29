@@ -128,7 +128,8 @@ info.bases <- function(nom_encuesta, años) {
   # Filtrar según parámetros
   df_filtrado <- descargar %>%
     dplyr::filter(encuesta %in% nom_encuesta) %>%
-    dplyr::filter(año %in% años)
+    dplyr::filter(año %in% años) %>%
+    dplyr::select(encuesta, año,num_modulo, modulo)
 
   # Retornar el data frame filtrado por si quieres usarlo también en código
   return(df_filtrado)
