@@ -18,11 +18,13 @@ devtools::source_url("https://raw.githubusercontent.com/Manumarc/Indicadores-cen
 
 ## Descargar bases
 
-La función "descargar_bases" permite descargar las bases del Censo Escolar para los años 2022, 2023 y/o 2024 de manera automática. Además, las almacena en el entorno del proyecto de Rmarkdown dentro de una carpeta llamada "01 Bases" de manera automática. La función puede descargar las bases de cada año por separado o en conjunto según se requiera. A continuación se muestra la forma en que se usa el código.
+La función "descargar_bases" permite descargar las bases de la Enaho o la Endes para los años 2016 en adelante de manera automática. Además, las almacena en el entorno del proyecto de Rmarkdown dentro de una carpeta llamada "01 Bases" de manera automática. La función puede descargar las bases de cada año por separado o en conjunto según se requiera. A continuación se muestra la forma en que se usa el código.
 
 ```
-# Llamar las bases del año 2023 #
-#-------------------------------#
+#--------------------------------------------------------------------------#
+# Descargar Enaho del año 2023, los módulos 1, 3 y 34
+#--------------------------------------------------------------------------#
 
-descargar_bases("Enaho",c("2023"))
+descargar_bases("Enaho",c(2023),c(1,3,34)
 
+```
