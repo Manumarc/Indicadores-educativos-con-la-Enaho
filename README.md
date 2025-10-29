@@ -1,9 +1,9 @@
 # Paquetes requeridos
 
-- library(dplyr)
-- library(readr)
-- library(purrr)
-- library(fs)
+- library(tidyverse) # Un conjunto de paquetes interrelacionados diseñados para análisis de datos
+- library(foreign) # Importar y exportar bases de spss
+- library(purrr) # facilita la programación funcional en R (uso de map)
+- library(survey)  # Permite analizar datos provenientes de muestras complejas
 
 # Indicadores educativos con la Enaho
 Conjunto de funciones para el procesamiento y cálculo de indicadores educativos con las bases de datos de la Encuesta nacional de hogares (Enaho) y la Encuesta demográfica y de salud (Endes).
