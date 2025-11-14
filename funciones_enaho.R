@@ -16,120 +16,194 @@ bd_regiones <- data.frame(
   stringsAsFactors = FALSE
 )
 
+#================================================#
+# Creación de base de datos de enaho 2006 a 2024 #
+#================================================#
+
+# Vector de módulos enaho
+mod_enaho <- c("01","02","03","04","05","07","08","09","10","11","12","13","15","16","17","18","22","23","24","25","26","27","28","34","37","77","78","84","85","1825")
+
+#Vector de nombre de los módulos
+
+nom_modulo <- c("Características de la vivienda y del hogar",
+                "Características de los miembros del hogar",
+                "Educación",
+                "Salud",
+                "Empleo e ingresos",
+                "Gastos en alimentos y bebidas (módulo 601)",
+                "Instituciones beneficas",
+                "Mantenimiento de la vivienda",
+                "Transportes y Comunicaciones",
+                "Servicios a la vivienda",
+                "Esparcimiento, diversion y servicios de cultura",
+                "Vestido y calzado",
+                "Gastos de transferencias",
+                "Muebles y enseres",
+                "Otros bienes y servicios",
+                "Equipamiento del hogar",
+                "Producción agrícola",
+                "Subproductos agricolas",
+                "Producción forestal",
+                "Gastos en actividades agricolas y/o forestales",
+                "Producción pecuaria",
+                "Subproductos pecuarios",
+                "Gastos en actividades pecuarias",
+                "Sumarias (variables calculadas)",
+                "Programas sociales (miembros del hogar)",
+                "Ingresos del trabajador independiente",
+                "Bienes y Servicios de Cuidados Personales",
+                "Participación Ciudadana",
+                "Gobernabilidad, Democracia y Transparencia",
+                "Beneficiarios de Instituciones sin fines de lucro: Olla Común")
+
+# Vector de años 
+num_años <- c(2006:2024)
+
+#Vector de código de encuesta (por año)
+cod_encuesta <- c(282:285,279,291,324,404,440,498,546,603,634,687,737,759,784,906,966)
+
+# Construcción de base de datos #
+#-------------------------------#
+
+# Base de datos con nombre de los módulos
+tabla_nommod <- data.frame(
+  modulo = mod_enaho,
+  nom_modulo = nom_modulo
+)
+
+# Base de datos 
+bd_inicial <- 
+  expand_grid(
+    encuesta = "Enaho",
+    año = num_años,
+    modulo = mod_enaho,
+  ) %>% 
+  left_join(tabla_nommod, by = "modulo") %>% 
+  filter(año %in% c(2023, 2024) | modulo != "1825") %>% 
+  arrange(desc(año), modulo)
+
+# Base de datos con çodigo de encuesta para construir los links 
+tabla_cod <- data.frame(
+  año = 2006:2024,
+  cod = cod_encuesta
+)
+
+bd_encuestas <- bd_inicial %>% 
+  left_join(tabla_cod, by = "año") %>% 
+  mutate(
+    link = paste0(
+      "https://proyectos.inei.gob.pe/iinei/srienaho/descarga/SPSS/",
+      cod, "-Modulo", modulo, ".zip"
+    )
+  ) %>% 
+  dplyr::select(-cod) %>% 
+  arrange(año,modulo) %>% 
+  distinct()
+
 #=================================================================#
 # Función para descargar las bases de la Enaho por módulos y años #
 #=================================================================#
 
-descargar_bases <- function(nom_encuesta, años, modulos){
+descargar_bases <- function(nom_encuesta, num_años, nom_modulos) {
 
-  carpeta_destino <- "01 Bases"
-  if (!dir.exists(carpeta_destino)) dir.create(carpeta_destino, recursive = TRUE)
-
-  # URL y destino del CSV
-  url <- "https://raw.githubusercontent.com/Manumarc/Indicadores-educativos-con-la-Enaho/refs/heads/main/Descarga_enaho.csv"
-  destino <- file.path(tempdir(), "Descarga_enaho.csv")  # evita problemas de permisos
-
-  # Descargar el CSV
-  download.file(url, destfile = destino, mode = "wb")
-
-  descargar <- read_csv2(destino, show_col_types = FALSE)
-
-  # Filtrar según input
-  df_filtrado <- descargar %>%
-    filter(encuesta %in% nom_encuesta) %>%
-    filter(año %in% años) %>%
-    filter(num_modulo %in% modulos)
-
-  # Descarga, descompresión y copia del .sav
-  walk2(seq_len(nrow(df_filtrado)), paste0(nom_encuesta, "_", df_filtrado$año, "_modulo_", df_filtrado$num_modulo), function(i, nombre) {
-
-    url <- df_filtrado$link[i]
-    nom_bds <- df_filtrado$nom_bd[i]
-
-    ruta_zip <- file.path(carpeta_destino, paste0(nombre, ".zip"))
-    carpeta_temporal <- file.path(carpeta_destino, nombre)
-
-    message("Descargando ", nombre, "...")
-    download.file(url, destfile = ruta_zip, mode = "wb")
-
-    message("Descomprimiendo solo archivos .sav de ", nombre, "...")
-    archivos_sav <- tryCatch({
-      unzip(ruta_zip, list = TRUE)$Name
-    }, error = function(e) {
-      system(sprintf("unzip -Z1 %s", shQuote(ruta_zip)), intern = TRUE)
-    })
-    
-    archivos_sav <- grep("\\.sav$", archivos_sav, value = TRUE, ignore.case = TRUE)
-    
-    if (length(archivos_sav) == 0) {
-      warning("No se encontraron archivos .sav en ", nombre)
-    } else {
-      unzip(ruta_zip, files = archivos_sav, exdir = carpeta_temporal)
-    }
-
-    # Separar los nombres de archivo (si hay varios)
-    archivos_objetivo <- strsplit(nom_bds, ",\\s*")[[1]]
-
-    # Iterar sobre cada archivo .sav a buscar
-    for (archivo_nom in archivos_objetivo) {
+  #============================#
+  # Crear carpeta si no existe #
+  #============================#
   
-      archivo_base <- archivo_nom   # aquí pones "Enaho01-2024-100"
-          
-      todos_archivos <- list.files(
-        path = carpeta_temporal,
-        recursive = TRUE,
-        full.names = TRUE
-      )
-          
-      archivo_encontrado <- todos_archivos[grepl(archivo_base, basename(todos_archivos), ignore.case = TRUE)]
-          
-        if (length(archivo_encontrado) > 0) {
-          # nombre base del archivo encontrado
-          nombre_base <- tools::file_path_sans_ext(basename(archivo_encontrado))
-          extension   <- tools::file_ext(archivo_encontrado)
-              
-          # verificar si ya contiene "_año"
-          if (!grepl(paste0("_", df_filtrado$año[i], "$"), nombre_base)) {
-            # si no lo tiene, se lo añadimos
-            nombre_base <- paste0(nombre_base, "_", df_filtrado$año[i])
-          }
-              
-          # construir destino con la extensión original
-          destino_sav <- file.path(carpeta_destino, paste0(nombre_base, ".", extension))
-              
-          fs::file_copy(archivo_encontrado, destino_sav, overwrite = TRUE)
-          message("Archivo copiado a: ", destino_sav)
-        } else {
-          warning("No se encontró archivo: ", archivo_nom, " en ", carpeta_temporal)
-      }
-    }
-  })
-
-  message("Proceso completo.")
+  if (!dir.exists("01 Bases")) {
+    dir.create("01 Bases")
+  }
+  
+  #====================================#
+  # Filtrar los links correspondientes #
+  #====================================#
+  
+  df_descarga <- bd_encuestas %>% 
+    filter(
+      encuesta == nom_encuesta,
+      año %in% num_años,
+      modulo %in% nom_modulos
+    )
+  
+  #=============================#
+  # Proceso de descarga de .zip # 
+  #=============================#
+  
+  for (i in seq_len(nrow(df_descarga))) {
+    
+    url <- df_descarga$link
+    
+    # Nombre con el que se guardará el zip #
+    #--------------------------------------#
+    
+    file_out <- paste0("01 Bases/", 
+                       df_descarga$encuesta[i], "_",
+                       df_descarga$año[i], "_",
+                       df_descarga$modulo[i], ".zip")
+    
+    # Registrar carpetas existentes ANTES de descomprimir #
+    #-----------------------------------------------------#
+    
+    dirs_antes <- list.dirs("01 Bases", recursive = FALSE)
+    
+    # Descargar el .zip # 
+    #-------------------#
+    
+    message("Descargando: ", file_out)
+    
+    download.file(url[i], destfile = file_out, mode = "wb")
+    
+    # Descomprimir el archivo .zip #
+    #------------------------------#
+    
+    unzip(file_out, exdir = "01 Bases")
+    
+    # Registrar carpetas DESPUÉS de descomprimir #
+    #--------------------------------------------#
+    
+    dirs_despues <- list.dirs("01 Bases", recursive = FALSE)
+    
+    # Las nuevas carpetas son donde buscar .sav # 
+    #-------------------------------------------#
+    
+    nuevas_dirs <- setdiff(dirs_despues, dirs_antes)
+    
+    # Buscar archivos .sav SOLO dentro de las carpetas descomprimidas #
+    #-----------------------------------------------------------------#
+    
+    archivos_sav <- list.files(
+      path = nuevas_dirs,
+      pattern = "\\.sav$",
+      recursive = TRUE,
+      full.names = TRUE
+    )
+    
+    # Copiar los .sav a "01 Bases" #
+    #------------------------------#
+    
+    file.copy(
+      from = archivos_sav,
+      to = "01 Bases",
+      overwrite = TRUE
+    )
+    
+  }
+  
+  message("Descarga y extracción de .sav finalizada.")
+  
 }
-
 
 #=======================================================================#
 # Función para ver cuáles módulos hay en cada base en un año específico #
 #=======================================================================#
 
-info.encuesta <- function(nom_encuesta, años) {
+info.encuesta <- function(nom_encuesta, num_años) {
   
-  # URL del CSV remoto
-  url <- "https://raw.githubusercontent.com/Manumarc/Indicadores-educativos-con-la-Enaho/refs/heads/main/Descarga_enaho.csv"
-  destino <- file.path(tempdir(), "Descarga_enaho.csv")
-
-  # Descargar el CSV (modo binario para evitar errores de codificación)
-  download.file(url, destfile = destino, mode = "wb")
-
-  # Leer el CSV
-  descargar <- readr::read_csv2(destino, show_col_types = FALSE)
-
   # Filtrar según parámetros
-  df_filtrado <- descargar %>%
+  df_filtrado <- bd_encuestas %>%
     dplyr::filter(encuesta %in% nom_encuesta) %>%
-    dplyr::filter(año %in% años) %>%
-    dplyr::select(encuesta, año,num_modulo, modulo)
+    dplyr::filter(año %in% num_años) %>%
+    dplyr::select(encuesta, año, modulo, nom_modulo )
 
   # Retornar el data frame filtrado por si quieres usarlo también en código
   return(df_filtrado)
