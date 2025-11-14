@@ -156,16 +156,7 @@ descargar_bases <- function(nom_encuesta, num_años, nom_modulos) {
     # Descomprimir el archivo .zip #
     #------------------------------#
     
-    #unzip(file_out, exdir = "01 Bases")
-    
-    # Función para descomprimir con windows
-    unzip_win <- function(zipfile, exdir){
-      
-      system2("unzip", args = c("-O", "cp850", zipfile, "-d", exdir))
-      
-    }
-
-    unzip_win(file_out, "01 Bases")
+    zip::unzip(file_out, exdir = "01 Bases")    
     
     # Registrar carpetas DESPUÉS de descomprimir #
     #--------------------------------------------#
