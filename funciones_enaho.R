@@ -62,7 +62,6 @@ nom_modulo_endes <- c("Caracteristicas del Hogar",
                       "Encuesta de salud",
                       "Programas Sociales")
 
-
 # Vector de años 
 num_años <- c(2006:2024)
 
