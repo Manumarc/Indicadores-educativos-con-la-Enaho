@@ -126,7 +126,6 @@ tabla_nommod_endes2 <- data.frame(
 )
 
 # Base de datos 
-
 endes1 <- expand_grid(
   encuesta = "Endes",
   año = 2020:2024,
@@ -174,7 +173,6 @@ rm(list = objetos_a_borrar) # Eliminar
 #===========================================================#
 
 # Lima incluye a Lima Provincias y Lima Metropolitana
-
 bd_regiones <- data.frame(
   ubigeo_reg = sprintf("%02d", 1:25),
   nom_region = c(
