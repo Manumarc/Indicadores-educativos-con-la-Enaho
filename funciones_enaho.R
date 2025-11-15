@@ -1,3 +1,169 @@
+#========================================================#
+# Creación de base de datos de Enaho y Endes 2006 a 2024 #
+#========================================================#
+
+# Vector de módulos enaho #
+#-------------------------#
+
+# Módulos de la Enaho
+mod_enaho <- c("01","02","03","04","05","07","08","09","10","11","12","13","15","16","17","18","22","23","24","25","26","27","28","34","37","77","78","84","85","1825")
+
+# Módulos de la Endes
+mod_endes1 <- c("1629","1630","1631","1632","1633","1634","1635","1636","1637","1638","1639","1640","1641")
+mod_endes2<- c("64","65","66","67","69","70","71","72","73","74","413","414","569")
+
+#Vector de nombre de los módulos #
+#--------------------------------#
+
+nom_modulo_enaho <- c("Características de la vivienda y del hogar",
+                      "Características de los miembros del hogar",
+                      "Educación",
+                      "Salud",
+                      "Empleo e ingresos",
+                      "Gastos en alimentos y bebidas (módulo 601)",
+                      "Instituciones beneficas",
+                      "Mantenimiento de la vivienda",
+                      "Transportes y Comunicaciones",
+                      "Servicios a la vivienda",
+                      "Esparcimiento, diversion y servicios de cultura",
+                      "Vestido y calzado",
+                      "Gastos de transferencias",
+                      "Muebles y enseres",
+                      "Otros bienes y servicios",
+                      "Equipamiento del hogar",
+                      "Producción agrícola",
+                      "Subproductos agricolas",
+                      "Producción forestal",
+                      "Gastos en actividades agricolas y/o forestales",
+                      "Producción pecuaria",
+                      "Subproductos pecuarios",
+                      "Gastos en actividades pecuarias",
+                      "Sumarias (variables calculadas)",
+                      "Programas sociales (miembros del hogar)",
+                      "Ingresos del trabajador independiente",
+                      "Bienes y Servicios de Cuidados Personales",
+                      "Participación Ciudadana",
+                      "Gobernabilidad, Democracia y Transparencia",
+                      "Beneficiarios de Instituciones sin fines de lucro: Olla Común")
+
+nom_modulo_endes <- c("Caracteristicas del Hogar",
+                      "Caracteristicas de la Vivienda",
+                      "Datos Basicos de MEF",
+                      "Historia de Nacimiento - Tabla de Conocimiento de Metodo",
+                      "Embarazo, Parto, Puerperio y Lactancia",
+                      "Inmunización y Salud",
+                      "Nupcialidad - Fecundidad - Cónyugue y Mujer",
+                      "Conocimiento de Sida y uso del condón",
+                      "Mortalidad Materna - Violencia Familiar",
+                      "Peso y talla - Anemia",
+                      "Disciplina Infantil",
+                      "Encuesta de salud",
+                      "Programas Sociales")
+
+
+# Vector de años 
+num_años <- c(2006:2024)
+
+#Vector de código de encuesta (por año) #
+#---------------------------------------#
+
+cod_encuesta_enaho <- c(282:285,279,291,324,404,440,498,546,603,634,687,737,759,784,906,966)
+
+cod_encuesta_endes <- c(183,194,238,260,290,323,407,441,504,548,605,638,691,739,760,786,910,968)
+
+# Construcción de base de datos Enaho #
+#-------------------------------------#
+
+# Base de datos con nombre de los módulos
+tabla_nommod_enaho <- data.frame(
+  modulo = mod_enaho,
+  nom_modulo = nom_modulo_enaho
+)
+
+# Base de datos 
+bd_inicial_enaho <- 
+  expand_grid(
+    encuesta = "Enaho",
+    año = num_años,
+    modulo = mod_enaho,
+  ) %>% 
+  left_join(tabla_nommod_enaho, by = "modulo") %>% 
+  filter(año %in% c(2023, 2024) | modulo != "1825") %>% 
+  arrange(desc(año), modulo)
+
+# Base de datos con çodigo de encuesta para construir los links 
+tabla_cod_enaho <- data.frame(
+  año = num_años,
+  cod = cod_encuesta_enaho
+)
+
+bd_enaho <- bd_inicial_enaho %>% 
+  left_join(tabla_cod_enaho, by = "año") %>% 
+  mutate(
+    link = paste0(
+      "https://proyectos.inei.gob.pe/iinei/srienaho/descarga/SPSS/", cod, "-Modulo", modulo, ".zip"
+    )
+  ) %>% 
+  dplyr::select(-cod) %>% 
+  arrange(año,modulo) %>% 
+  distinct()
+
+# Construcción de base de datos Endes #
+#-------------------------------------#
+
+# Base de datos con nombre de los módulos
+tabla_nommod_endes1 <- data.frame(
+  modulo = mod_endes1,
+  nom_modulo = nom_modulo_endes
+)
+
+tabla_nommod_endes2 <- data.frame(
+  modulo = mod_endes2,
+  nom_modulo = nom_modulo_endes
+)
+
+# Base de datos 
+
+endes1 <- expand_grid(
+  encuesta = "Endes",
+  año = 2020:2024,
+  modulo = mod_endes1,
+) %>% 
+  left_join(tabla_nommod_endes1, by = "modulo")
+
+endes2 <- expand_grid(
+  encuesta = "Endes",
+  año = 2006:2019,
+  modulo = mod_endes2,
+) %>% 
+  filter(!año %in% 2008) %>% 
+  filter(!(año %in% c(2006:2013) & modulo %in% "569")) %>% 
+  filter(!(año %in% c(2006:2012) & modulo %in% c("413","414"))) %>% 
+  left_join(tabla_nommod_endes2, by = "modulo")
+
+bd_inicial_endes <- rbind(endes1,endes2)
+
+tabla_cod_endes <- data.frame(
+  año = c(2006,2007,2009:2024),
+  cod = cod_encuesta_endes
+)
+
+bd_endes <- bd_inicial_endes %>% 
+  left_join(tabla_cod_endes, by = "año") %>% 
+  mutate(
+    link = paste0(
+      "https://proyectos.inei.gob.pe/iinei/srienaho/descarga/SPSS/", cod, "-Modulo", modulo, ".zip"
+    )
+  ) %>% 
+  dplyr::select(-cod) %>% 
+  arrange(año,modulo) %>% 
+  distinct()
+
+
+bd_encuestas <- rbind(bd_enaho, bd_endes)
+
+rm(list = setdiff(ls(), "bd_encuestas"))
+
 #===========================================================#
 # Base de datos con nombre de regiones y ubigeo a 2 dígitos #
 #===========================================================#
@@ -16,93 +182,9 @@ bd_regiones <- data.frame(
   stringsAsFactors = FALSE
 )
 
-#================================================#
-# Creación de base de datos de enaho 2006 a 2024 #
-#================================================#
-
-# Vector de módulos enaho
-mod_enaho <- c("01","02","03","04","05","07","08","09","10","11","12","13","15","16","17","18","22","23","24","25","26","27","28","34","37","77","78","84","85","1825")
-
-#Vector de nombre de los módulos
-
-nom_modulo <- c("Características de la vivienda y del hogar",
-                "Características de los miembros del hogar",
-                "Educación",
-                "Salud",
-                "Empleo e ingresos",
-                "Gastos en alimentos y bebidas (módulo 601)",
-                "Instituciones beneficas",
-                "Mantenimiento de la vivienda",
-                "Transportes y Comunicaciones",
-                "Servicios a la vivienda",
-                "Esparcimiento, diversion y servicios de cultura",
-                "Vestido y calzado",
-                "Gastos de transferencias",
-                "Muebles y enseres",
-                "Otros bienes y servicios",
-                "Equipamiento del hogar",
-                "Producción agrícola",
-                "Subproductos agricolas",
-                "Producción forestal",
-                "Gastos en actividades agricolas y/o forestales",
-                "Producción pecuaria",
-                "Subproductos pecuarios",
-                "Gastos en actividades pecuarias",
-                "Sumarias (variables calculadas)",
-                "Programas sociales (miembros del hogar)",
-                "Ingresos del trabajador independiente",
-                "Bienes y Servicios de Cuidados Personales",
-                "Participación Ciudadana",
-                "Gobernabilidad, Democracia y Transparencia",
-                "Beneficiarios de Instituciones sin fines de lucro: Olla Común")
-
-# Vector de años 
-num_años <- c(2006:2024)
-
-#Vector de código de encuesta (por año)
-cod_encuesta <- c(282:285,279,291,324,404,440,498,546,603,634,687,737,759,784,906,966)
-
-# Construcción de base de datos #
-#-------------------------------#
-
-# Base de datos con nombre de los módulos
-tabla_nommod <- data.frame(
-  modulo = mod_enaho,
-  nom_modulo = nom_modulo
-)
-
-# Base de datos 
-bd_inicial <- 
-  expand_grid(
-    encuesta = "Enaho",
-    año = num_años,
-    modulo = mod_enaho,
-  ) %>% 
-  left_join(tabla_nommod, by = "modulo") %>% 
-  filter(año %in% c(2023, 2024) | modulo != "1825") %>% 
-  arrange(desc(año), modulo)
-
-# Base de datos con çodigo de encuesta para construir los links 
-tabla_cod <- data.frame(
-  año = 2006:2024,
-  cod = cod_encuesta
-)
-
-bd_encuestas <- bd_inicial %>% 
-  left_join(tabla_cod, by = "año") %>% 
-  mutate(
-    link = paste0(
-      "https://proyectos.inei.gob.pe/iinei/srienaho/descarga/SPSS/",
-      cod, "-Modulo", modulo, ".zip"
-    )
-  ) %>% 
-  dplyr::select(-cod) %>% 
-  arrange(año,modulo) %>% 
-  distinct()
-
-#=================================================================#
-# Función para descargar las bases de la Enaho por módulos y años #
-#=================================================================#
+#========================================================================#
+# Función para descargar las bases de la Enaho y Endespor módulos y años #
+#========================================================================#
 
 descargar_bases <- function(nom_encuesta, num_años, nom_modulos) {
 
@@ -141,11 +223,6 @@ descargar_bases <- function(nom_encuesta, num_años, nom_modulos) {
                        df_descarga$año[i], "_",
                        df_descarga$modulo[i], ".zip")
     
-    # Registrar carpetas existentes ANTES de descomprimir #
-    #-----------------------------------------------------#
-    
-    dirs_antes <- list.dirs("01 Bases", recursive = FALSE)
-    
     # Descargar el .zip # 
     #-------------------#
     
@@ -153,39 +230,74 @@ descargar_bases <- function(nom_encuesta, num_años, nom_modulos) {
     
     download.file(url[i], destfile = file_out, mode = "wb")
     
+  
+    zip_list <- utils::unzip(file_out, list = TRUE)
+    
+    # Filtrar solo .sav / .SAV / .SaV (insensible a mayúsculas)
+    es_sav <- grepl("(?i)\\.sav$", zip_list$Name, perl = TRUE)
+    sav_en_zip <- zip_list$Name[es_sav]
+    
+    if (length(sav_en_zip) == 0) {
+      message("  No se encontraron .sav en ", basename(file_out))
+      next
+    }
+    
     # Descomprimir el archivo .zip #
     #------------------------------#
     
-    zip::unzip(file_out, exdir = "01 Bases")    
+    zip::unzip(file_out, exdir = "01 Bases")   
     
-    # Registrar carpetas DESPUÉS de descomprimir #
+    # Registrar archivos DESPUÉS de descomprimir #
     #--------------------------------------------#
     
-    dirs_despues <- list.dirs("01 Bases", recursive = FALSE)
-    
-    # Las nuevas carpetas son donde buscar .sav # 
-    #-------------------------------------------#
-    
-    nuevas_dirs <- setdiff(dirs_despues, dirs_antes)
-    
-    # Buscar archivos .sav SOLO dentro de las carpetas descomprimidas #
-    #-----------------------------------------------------------------#
-    
-    archivos_sav <- list.files(
-      path = nuevas_dirs,
-      pattern = "\\.sav$",
-      recursive = TRUE,
-      full.names = TRUE
+    rutas_extraidas <- normalizePath(
+      file.path("01 Bases", sav_en_zip),
+      winslash = "/",
+      mustWork = FALSE
     )
+    
+    # Filtrar solo las que realmente existen
+    rutas_extraidas <- rutas_extraidas[file.exists(rutas_extraidas)]
+
+    if (length(rutas_extraidas) == 0) {
+      message("  Ningún .sav encontrado tras descomprimir: ", basename(file_out))
+      next
+    }
     
     # Copiar los .sav a "01 Bases" #
     #------------------------------#
     
-    file.copy(
-      from = archivos_sav,
-      to = "01 Bases",
-      overwrite = TRUE
-    )
+    if (nom_encuesta == "Endes") {
+      
+      año_actual <- df_descarga$año[i]
+      
+      nombres_base <- tools::file_path_sans_ext(basename(rutas_extraidas))
+      
+      # Patrón: termina en "_2023" o "_2024" (o cualquier año en general)
+      patron_anio <- paste0("_[0-9]{4}$")
+      
+      # Detectar si el nombre YA contiene año al final
+      ya_tiene_anio <- grepl(patron_anio, nombres_base)
+      
+      # Construir los nombres finales
+      nombres_finales <- ifelse(
+        ya_tiene_anio,
+        paste0(nombres_base, ".sav"),  # no agregar año
+        paste0(nombres_base, "_", año_actual, ".sav")  # sí agregar año
+      )
+      
+      destinos <- file.path("01 Bases", nombres_finales)
+      
+      file.copy(rutas_extraidas, destinos, overwrite = TRUE)
+      
+    } else {
+      
+      destinos <- file.path("01 Bases", basename(rutas_extraidas))
+      file.copy(rutas_extraidas, destinos, overwrite = TRUE)
+      
+    }
+    
+    message("  Procesados ", length(rutas_extraidas), " archivos .sav.")
     
   }
   
@@ -197,16 +309,16 @@ descargar_bases <- function(nom_encuesta, num_años, nom_modulos) {
 # Función para ver cuáles módulos hay en cada base en un año específico #
 #=======================================================================#
 
-info.encuesta <- function(nom_encuesta, num_años) {
+info.encuesta <- function(nom_enc, nom_año) {
   
-  # Filtrar según parámetros
   df_filtrado <- bd_encuestas %>%
-    dplyr::filter(encuesta %in% nom_encuesta) %>%
-    dplyr::filter(año %in% num_años) %>%
-    dplyr::select(encuesta, año, modulo, nom_modulo )
-
-  # Retornar el data frame filtrado por si quieres usarlo también en código
+    as.data.frame() %>% 
+    filter(encuesta %in% nom_enc) %>%
+    filter(año %in% nom_año) %>%
+    dplyr::select(encuesta, año, modulo, nom_modulo)
+  
   return(df_filtrado)
+  
 }
 
 #==============================================================================#
