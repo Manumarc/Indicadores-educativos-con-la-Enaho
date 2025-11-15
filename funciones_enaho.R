@@ -2,6 +2,8 @@
 # Creación de base de datos de Enaho y Endes 2006 a 2024 #
 #========================================================#
 
+objetos_antes <- ls()
+
 # Vector de módulos enaho #
 #-------------------------#
 
@@ -159,10 +161,12 @@ bd_endes <- bd_inicial_endes %>%
   arrange(año,modulo) %>% 
   distinct()
 
-
 bd_encuestas <- rbind(bd_enaho, bd_endes)
 
-rm(list = setdiff(ls(), "bd_encuestas"))
+objetos_despues <- ls()
+objetos_nuevos <- setdiff(objetos_despues, objetos_antes) # Objetos creados por el script
+objetos_a_borrar <- setdiff(objetos_nuevos, "bd_encuestas") # Mantener solo "bd_encuestas" entre los nuevos
+rm(list = objetos_a_borrar) # Eliminar
 
 #===========================================================#
 # Base de datos con nombre de regiones y ubigeo a 2 dígitos #
