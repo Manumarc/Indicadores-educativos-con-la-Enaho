@@ -253,16 +253,18 @@ descargar_bases <- function(nom_encuesta, num_años, nom_modulos) {
     tmp_dir <- file.path(tempdir(), "enaho_tmp")
     dir.create(tmp_dir, showWarnings = FALSE)
 
-    utils::unzip(file_out, exdir = tmp_dir)
+    zip::unzip(file_out, exdir = tmp_dir)
     
     # Registrar archivos DESPUÉS de descomprimir #
     #--------------------------------------------#
+
+    rutas_extraidas <- file.path(tmp_dir, sav_en_zip)
     
-    rutas_extraidas <- normalizePath(
-      file.path("01 Bases", sav_en_zip),
-      winslash = "/",
-      mustWork = FALSE
-    )
+    # rutas_extraidas <- normalizePath(
+    #   file.path("01 Bases", sav_en_zip),
+    #   winslash = "/",
+    #   mustWork = FALSE
+    # )
     
     # Filtrar solo las que realmente existen
     rutas_extraidas <- rutas_extraidas[file.exists(rutas_extraidas)]
