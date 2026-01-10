@@ -251,9 +251,10 @@ descargar_bases <- function(nom_encuesta, num_años, nom_modulos) {
    # zip::unzip(file_out, exdir = "01 Bases")   
    # utils::unzip(file_out, exdir = "01 Bases")
 
-    suppressWarnings(
-    utils::unzip(file_out, exdir = "01 Bases")
-    )
+    tmp_dir <- file.path(tempdir(), "enaho_tmp")
+    dir.create(tmp_dir, showWarnings = FALSE)
+
+    utils::unzip(file_out, exdir = tmp_dir)
     
     # Registrar archivos DESPUÉS de descomprimir #
     #--------------------------------------------#
