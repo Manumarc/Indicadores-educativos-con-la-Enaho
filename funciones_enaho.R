@@ -248,7 +248,8 @@ descargar_bases <- function(nom_encuesta, num_años, nom_modulos) {
     # Descomprimir el archivo .zip #
     #------------------------------#
     
-    zip::unzip(file_out, exdir = "01 Bases")   
+   # zip::unzip(file_out, exdir = "01 Bases")   
+    utils::unzip(file_out, exdir = "01 Bases")
     
     # Registrar archivos DESPUÉS de descomprimir #
     #--------------------------------------------#
