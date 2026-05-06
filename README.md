@@ -41,9 +41,9 @@ La función "descargar_bases" permite descargar las bases de la Enaho o la Endes
 descargar_bases("Enaho",c(2023),c("01","03","34"))
 
 #--------------------------------------------------------------------------------#
-# Descargar Enaho del año 2006 al 2023, los módulos 1629, 1630, 1638, 64, 65, 74
+# Descargar Enaho del año 2006 al 2025, los módulos 1629, 1630, 1638, 64, 65, 74
 #--------------------------------------------------------------------------------#
 
-# descargar_bases("Endes",c(2006:2024),c("1629","1630","1638","64","65","74"))
+# descargar_bases("Endes",c(2006:2025),c("1629","1630","1638","64","65","74"))
 
 ```
