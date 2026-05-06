@@ -8,7 +8,7 @@ objetos_antes <- ls()
 #-------------------------#
 
 # Módulos de la Enaho
-mod_enaho <- c("01","02","03","04","05","07","08","09","10","11","12","13","15","16","17","18","22","23","24","25","26","27","28","34","37","77","78","84","85","1825")
+mod_enaho <- c("01","02","03","04","05","07","08","09","10","11","12","13","15","16","17","18","22","23","24","25","26","27","28","34","37","77","78","84","85","1825","2081","2082")
 
 # Módulos de la Endes
 mod_endes1 <- c("1629","1630","1631","1632","1633","1634","1635","1636","1637","1638","1639","1640","1641")
@@ -46,7 +46,9 @@ nom_modulo_enaho <- c("Características de la vivienda y del hogar",
                       "Bienes y Servicios de Cuidados Personales",
                       "Participación Ciudadana",
                       "Gobernabilidad, Democracia y Transparencia",
-                      "Beneficiarios de Instituciones sin fines de lucro: Olla Común")
+                      "Beneficiarios de Instituciones sin fines de lucro: Olla Común"
+                      "Crianza de mascotas en el hogar",
+                      "Inseguridad alimentaria")
 
 nom_modulo_endes <- c("Caracteristicas del Hogar",
                       "Caracteristicas de la Vivienda",
@@ -65,12 +67,12 @@ nom_modulo_endes <- c("Caracteristicas del Hogar",
 # Vector de años #
 #----------------#
 
-num_años <- c(2006:2024)
+num_años <- c(2006:2025)
 
 #Vector de código de encuesta (por año) #
 #---------------------------------------#
 
-cod_encuesta_enaho <- c(282:285,279,291,324,404,440,498,546,603,634,687,737,759,784,906,966)
+cod_encuesta_enaho <- c(282:285,279,291,324,404,440,498,546,603,634,687,737,759,784,906,966,1031)
 
 cod_encuesta_endes <- c(183,194,238,260,290,323,407,441,504,548,605,638,691,739,760,786,910,968)
 
