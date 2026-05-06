@@ -46,7 +46,7 @@ nom_modulo_enaho <- c("Características de la vivienda y del hogar",
                       "Bienes y Servicios de Cuidados Personales",
                       "Participación Ciudadana",
                       "Gobernabilidad, Democracia y Transparencia",
-                      "Beneficiarios de Instituciones sin fines de lucro: Olla Común"
+                      "Beneficiarios de Instituciones sin fines de lucro: Olla Común",
                       "Crianza de mascotas en el hogar",
                       "Inseguridad alimentaria")
 
