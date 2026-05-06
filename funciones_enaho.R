@@ -93,7 +93,9 @@ bd_inicial_enaho <-
     modulo = mod_enaho,
   ) %>% 
   left_join(tabla_nommod_enaho, by = "modulo") %>% 
-  filter(año %in% c(2023, 2024) | modulo != "1825") %>% 
+  filter(año %in% c(2023, 2024, 2025) | modulo != "1825") %>% 
+  filter(año %in% c(2025) | modulo != c("2081") ) %>% 
+  filter(año %in% c(2025) | modulo != c("2082") ) %>% 
   arrange(desc(año), modulo)
 
 # Base de datos con çodigo de encuesta para construir los links 
